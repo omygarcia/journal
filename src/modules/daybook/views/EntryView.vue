@@ -21,7 +21,7 @@
   <div class="d-flex flex-column px-3 h-75">
     <textarea placeholder="¿Qué sucedio hoy?"></textarea>
   </div>
-  <Fab />
+  <Fab icon="fa-save" />
   <img src="https://astroaventura.net/wp-content/uploads/2023/08/neptuno-1-1-1024x565.jpg" 
   alt="entry-picture" 
   class="img-thumbnail"
@@ -49,4 +49,12 @@ textarea{
        outline: none; 
     }
 }
+
+ img{
+        width: 200px;
+        position: fixed;
+        bottom: 150px;
+        right: 20px;
+        box-shadow: 0px 5px 10px rgba($color: #000000, $alpha: 0.2);
+    }
 </style>
