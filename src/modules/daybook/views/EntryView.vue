@@ -27,12 +27,14 @@
                 class="img-thumbnail"
             />
     </template>
-    <Fab icon="fa-save" />
+    <Fab icon="fa-save"
+        @on:click="saveEntry"
+     />
 </template>
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import getDayMonthYear from '@/modules/daybook/helpers/getDayMonthYear'
 
 
@@ -68,12 +70,35 @@ export default {
     },
     methods:{
         loadEntry(){
-            //getEntriesById
-            const entry = this.getEntryById(this.id);
-            //console.log(entry);
-            if(!entry)this.$router.push({name:'no-entry'});
+            let entry;
+
+            if(this.id == 'new')
+            {
+                entry = {date:new Date().getTime(),text:''};
+            }
+            else{
+                //getEntriesById
+                entry = this.getEntryById(this.id);
+                //console.log(entry);
+                if(!entry)this.$router.push({name:'no-entry'});
+            }
+            
             this.entry = entry;
-        }
+        },
+        async saveEntry(){
+            
+            //console.log(this.entry);
+            if(this.entry.id)
+            {
+                console.log('Actualizando entrada');
+                this.updateEntry(this.entry);
+            }
+            else{
+                //crear una nueva entrada
+                console.log('Guardando entrada')
+            }
+        },
+        ...mapActions('journal',['updateEntry'])
     },
     created(){
         //console.log(this.$route.params.id);
