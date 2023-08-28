@@ -19,6 +19,13 @@ export const updateEntry= (state,entry)=>{
 }
 
 
-export const addEntry= (/*state*/)=>{ //parametro entry actualizada
-    
+export const addEntry= (state,entry)=>{ //parametro entry actualizada
+    //state -> entries ->la nueva entrada debe ser la primera
+    state.entries.unshift(entry);
+}
+
+
+export const deleteEntry = (state,id)=>{
+    // remover del State.entries => la entrada
+    state.entries = state.entries.filter(entry=>entry.id!==id);
 }

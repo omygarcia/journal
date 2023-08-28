@@ -7,10 +7,18 @@
                 <span class="fs-3 fw-light">{{yearDay}}</span>
             </div>
             <div>
-                <button class="btn btn-danger mx-2">
+                <button
+                    v-if="entry.id" 
+                    class="btn btn-danger mx-2"
+                    @click="onDeleteEntry"
+                    >
                     Borrar
                     <i class="fa fa-trash-alt"></i>
                 </button>
+
+                <input type="file" 
+                    @change="onSelectedImage"
+                />
 
                 <button class="btn btn-primary">
                     Subir foto
@@ -22,7 +30,11 @@
         <div class="d-flex flex-column px-3 h-75">
             <textarea v-model="entry.text" placeholder="¿Qué sucedio hoy?"></textarea>
         </div>
-          <img src="https://astroaventura.net/wp-content/uploads/2023/08/neptuno-1-1-1024x565.jpg" 
+        <!--<img src="https://astroaventura.net/wp-content/uploads/2023/08/neptuno-1-1-1024x565.jpg" 
+                alt="entry-picture" 
+                class="img-thumbnail"
+            />-->
+        <img :src="localImage" 
                 alt="entry-picture" 
                 class="img-thumbnail"
             />
@@ -36,6 +48,7 @@
 import { defineAsyncComponent } from 'vue'
 import { mapGetters, mapActions } from 'vuex';
 import getDayMonthYear from '@/modules/daybook/helpers/getDayMonthYear'
+import Swal from 'sweetalert2';
 
 
 export default {
@@ -43,7 +56,8 @@ export default {
         id:{
             type:String,
             required:true
-        }
+        },
+        localImage:null
     },
     components:{
         Fab:defineAsyncComponent(()=>import('@/modules/daybook/components/Fab.vue')),
@@ -69,6 +83,7 @@ export default {
         }
     },
     methods:{
+        ...mapActions('journal',['updateEntry','createEntry','deleteEntry']),
         loadEntry(){
             let entry;
 
@@ -87,6 +102,11 @@ export default {
         },
         async saveEntry(){
             
+            new Swal({
+                title:'Espere por favor...',
+                allowOutsideClick:false
+            });
+            Swal.showLoading();
             //console.log(this.entry);
             if(this.entry.id)
             {
@@ -96,9 +116,48 @@ export default {
             else{
                 //crear una nueva entrada
                 console.log('Guardando entrada')
+
+                //await action
+                const id = await this.createEntry(this.entry);
+
+                //redirectTo =>entry, param: id
+                this.$router.push({name:"entry",params:{id:id}});
             }
+            Swal.fire('Guardando','Entrada registrada con exito!','success');
         },
-        ...mapActions('journal',['updateEntry'])
+        async onDeleteEntry(){
+
+            const result = await Swal.fire({
+                title:'¿Está seguro?',
+                text:'Una vez borrado, no se puede recuperar',
+                showDenyButton:true,
+                confirmButtonText:'Si, estoy seguro'
+            });
+
+            //console.log({result})
+            
+            if(result.isConfirmed)
+            {
+                new Swal({
+                    title:'Espere por favor',
+                    allowOutsideClick:false
+                });
+                Swal.showLoading();
+                //console.log('onDeleteEntry',this.entry)
+                await this.deleteEntry(this.entry.id);
+                // redireccionar al entry
+                this.$router.push({name:"no-entry"});
+                Swal.fire('Eliminado','','success');
+            }
+            
+        },
+        onSelectedImage(event){
+            //console.log(event.target.files)
+            const file = event.target.files[0];
+            if(!file){
+                return;
+            }
+        }
     },
     created(){
         //console.log(this.$route.params.id);

@@ -9,6 +9,13 @@ import journalApi from "@/api/journalApi"
 export const loadEntries = async({commit})=>{
     const {data} = await journalApi.get('/entries.json');
     //console.log(data)
+
+    if(!data)
+    {
+        commit('setEntries',[]);
+        return;
+    }
+
     const entries = [];
     for(let id of Object.keys(data))
     {
@@ -35,6 +42,27 @@ export const updateEntry = async({commit},entry)=>{ //entry debe ser un parameto
     commit('updateEntry',{...entry});
 }
 
-export const createEntry = async(/*{commit}*/)=>{
+export const createEntry = async({commit}, entry)=>{
+    //dataToSave
+    //console.log('createEntry',entry);
 
+    //conts {data} = await journalApi.post(PATH.json,dataToSave)
+    const {data} = await journalApi.post(`/entries.json`,entry);
+
+    //data = {"name": "-Ncwlcgn5-UWD08mAfdZ""}
+    entry.id = data.name;
+
+    //commit -> addEntry
+    commit("addEntry",{...entry});
+
+    return entry.id;
+}
+
+export const deleteEntry = async({commit},id)=>{
+    // await JournalApi.delete
+    await journalApi.delete(`/entries/${id}.json`)
+    //commit deleteEntry
+    commit('deleteEntry',id);
+
+    return id;
 }
