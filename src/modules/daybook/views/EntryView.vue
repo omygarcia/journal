@@ -18,9 +18,14 @@
 
                 <input type="file" 
                     @change="onSelectedImage"
+                    ref="imageSelector"
+                    v-show="false"
+                    accept="image/png, image/jpeg"
                 />
 
-                <button class="btn btn-primary">
+                <button class="btn btn-primary"
+                    @click="onSelectImage"
+                    >
                     Subir foto
                     <i class="fa fa-upload"></i>
                 </button>
@@ -30,14 +35,18 @@
         <div class="d-flex flex-column px-3 h-75">
             <textarea v-model="entry.text" placeholder="¿Qué sucedio hoy?"></textarea>
         </div>
-        <!--<img src="https://astroaventura.net/wp-content/uploads/2023/08/neptuno-1-1-1024x565.jpg" 
-                alt="entry-picture" 
-                class="img-thumbnail"
-            />-->
-        <img :src="localImage" 
-                alt="entry-picture" 
-                class="img-thumbnail"
-            />
+        <img 
+            v-if="entry.picture && !localImage"
+            :src="entry.picture" 
+            alt="entry-picture" 
+            class="img-thumbnail"
+        />
+        <img 
+            v-if="localImage"
+            :src="localImage" 
+            alt="entry-picture" 
+            class="img-thumbnail"
+        />
     </template>
     <Fab icon="fa-save"
         @on:click="saveEntry"
@@ -48,6 +57,7 @@
 import { defineAsyncComponent } from 'vue'
 import { mapGetters, mapActions } from 'vuex';
 import getDayMonthYear from '@/modules/daybook/helpers/getDayMonthYear'
+import uploadImage from '@/modules/daybook/helpers/uploadImage'
 import Swal from 'sweetalert2';
 
 
@@ -56,15 +66,16 @@ export default {
         id:{
             type:String,
             required:true
-        },
-        localImage:null
+        }
     },
     components:{
         Fab:defineAsyncComponent(()=>import('@/modules/daybook/components/Fab.vue')),
     },
     data(){
         return {
-            entry:null
+            entry:null,
+            localImage:null,
+            file:null
         }
     },
     computed:{
@@ -107,6 +118,10 @@ export default {
                 allowOutsideClick:false
             });
             Swal.showLoading();
+
+            const picture = await uploadImage(this.file);
+            this.entry.picture = picture;
+
             //console.log(this.entry);
             if(this.entry.id)
             {
@@ -123,6 +138,7 @@ export default {
                 //redirectTo =>entry, param: id
                 this.$router.push({name:"entry",params:{id:id}});
             }
+            this.localImage = null;
             Swal.fire('Guardando','Entrada registrada con exito!','success');
         },
         async onDeleteEntry(){
@@ -155,8 +171,20 @@ export default {
             //console.log(event.target.files)
             const file = event.target.files[0];
             if(!file){
+                this.localImage = null;
+                this.file = null;
                 return;
             }
+
+            this.file = file;
+
+            const fr = new FileReader();
+            fr.onload = ()=> this.localImage = fr.result;
+            fr.readAsDataURL(file);
+        },
+        onSelectImage(){
+            //console.log('ok',this.$refs);
+            this.$refs.imageSelector.click();
         }
     },
     created(){
