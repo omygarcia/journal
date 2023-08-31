@@ -119,8 +119,11 @@ export default {
             });
             Swal.showLoading();
 
-            const picture = await uploadImage(this.file);
-            this.entry.picture = picture;
+            if(this.file)
+            {
+                const picture = await uploadImage(this.file);
+                this.entry.picture = picture;
+            }
 
             //console.log(this.entry);
             if(this.entry.id)
