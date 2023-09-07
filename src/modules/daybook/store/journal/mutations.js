@@ -29,3 +29,8 @@ export const deleteEntry = (state,id)=>{
     // remover del State.entries => la entrada
     state.entries = state.entries.filter(entry=>entry.id!==id);
 }
+
+export const clearEntries = (state,id)=>{
+    // remover del State.entries => la entrada
+    state.entries = [];
+}
